@@ -126,7 +126,7 @@ if submitted:
     try:
         scaled_input = scaler.transform(encoded_input)
         prediction = model.predict(scaled_input)[0][0]
-        label = "Fraudulent" if prediction > 0.5 else "Legitimate"
+        label = "Fraudulent" if prediction > 0.5 else "Not Fraudulent"
         st.success(f" Prediction: {label} (Confidence: {prediction:.2f})")
     except Exception as e:
         st.error(f" Prediction failed: {e}")
