@@ -18,8 +18,8 @@ model, scaler = load_trained_model()
 @st.cache_data
 def get_feature_names():
   df = pd.read_csv("Data/synthetic_fraud_dataset.csv")
-  features_names = df.drop(["Fraud_Label", "Transaction_ID", "User_ID", "Location", "Timestamp"], axis=1).columns.tolist()
-  return feature_name
+  feature_names = df.drop(["Fraud_Label", "Transaction_ID", "User_ID", "Location", "Timestamp"], axis=1).columns.tolist()
+  return feature_names
 
 feature_names = get_feature_names()
 
