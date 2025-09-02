@@ -12,7 +12,7 @@ def load_trained_model():
   scaler = joblib.load("fraud_detection_scaler.pkl")
   return model, scaler
 
-model, scalar = load_trained_model()
+model, scaler = load_trained_model()
 
 #loading dataset to extract features
 @st.cache_data
