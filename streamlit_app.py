@@ -12,6 +12,7 @@ st.markdown("Upload transaction data or enter a single transaction to predict fr
 try:
     model = load_model('model/fraud_model.h5')
     scaler = pickle.load(open('scaler/fraud_detection_scaler.pkl', 'rb'))  # MinMaxScaler
+    feature_list = pickle.load(open('feature_list.pkl', 'rb'))
 except Exception as e:
     st.error(f" Failed to load model or scaler: {e}")
     st.stop()
@@ -115,17 +116,17 @@ if submitted:
     }
 
     input_df = pd.DataFrame([input_dict])
-    input_encoded = pd.get_dummies(input_df)
+    encoded_input = pd.get_dummies(input_df)
 
-    for col in expected_features:
-        if col not in input_encoded.columns:
-            input_encoded[col] = 0
-    input_encoded = input_encoded[expected_features]
+    for col in feature_list:
+        if col not in encoded_input.columns:
+            encoded_input[col] = 0
+    encoded_input = encoded_input[feature_list]
 
     try:
-        scaled_input = scaler.transform(input_encoded)
+        scaled_input = scaler.transform(encoded_input)
         prediction = model.predict(scaled_input)[0][0]
         label = "Fraudulent" if prediction > 0.5 else "Legitimate"
-        st.success(f"🔍 Prediction: {label} (Confidence: {prediction:.2f})")
+        st.success(f" Prediction: {label} (Confidence: {prediction:.2f})")
     except Exception as e:
-        st.error(f"❌ Prediction failed: {e}")
+        st.error(f" Prediction failed: {e}")
