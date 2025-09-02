@@ -1,56 +1,73 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
-import tensorflow as tf
+import numpy as np
+import pickle
 from tensorflow.keras.models import load_model
-import joblib
+from sklearn.preprocessing import StandardScaler
 
-# ----------------------------
-# Load model and scaler
-# ----------------------------
-@st.cache_resource
-def load_trained_model():
-    model = load_model("model/fraud_model.h5")   # path to model file
-    scaler = joblib.load("scaler/fraud_detection_scaler.pkl")  # path to scaler file
-    return model, scaler
+# App title
+st.title("🕵️‍♀️ Fraud Detection Web App")
+st.markdown("Upload transaction data to predict fraudulent activity.")
 
-model, scaler = load_trained_model()
+# Load model and scaler with error handling
+try:
+    model = load_model('final_model.h5')
+except Exception as e:
+    st.error(f"❌ Model loading failed: {e}")
+    st.stop()
 
-# ----------------------------
-# Load dataset to extract features
-# ----------------------------
-@st.cache_data
-def get_feature_names():
-    df = pd.read_csv("synthetic_fraud_dataset.csv")
-    feature_names = df.drop(["Fraud_Label", "Transaction_ID", "User_ID","Location","Timestamp"], axis=1).columns.tolist()
-    return feature_names
+try:
+    scaler = pickle.load(open('scaler.pkl', 'rb'))
+except Exception as e:
+    st.error(f"❌ Scaler loading failed: {e}")
+    st.stop()
 
-feature_names = get_feature_names()
+# File uploader
+uploaded_file = st.file_uploader("📁 Upload CSV file", type=["csv"])
 
-# ----------------------------
-# Streamlit App
-# ----------------------------
-st.title("💳 Fraud Detection App")
-st.write("Predict whether a transaction is fraudulent using a trained deep learning model.")
+if uploaded_file:
+    try:
+        data = pd.read_csv(uploaded_file)
+    except Exception as e:
+        st.error(f"❌ Failed to read uploaded file: {e}")
+        st.stop()
 
-# Collect inputs dynamically
-st.sidebar.header("Enter Transaction Details")
-user_input = []
-for feature in feature_names:
-    value = st.sidebar.number_input(f"{feature}", min_value=0.0, value=1.0)
-    user_input.append(value)
+    st.subheader("📄 Uploaded Data")
+    st.write(data.head())
 
-# Convert input into numpy array
-input_array = np.array(user_input).reshape(1, -1)
-scaled_input = scaler.transform(input_array)
-
-# Prediction
-if st.sidebar.button("Predict Fraud"):
-    prediction = model.predict(scaled_input)
-    fraud_prob = float(prediction[0][0])
-
-    st.subheader("🔎 Prediction Result")
-    if fraud_prob > 0.5:
-        st.error(f"⚠ This transaction is predicted FRAUDULENT (probability = {fraud_prob:.2f})")
+    # Validate expected features
+    if hasattr(scaler, 'feature_names_in_'):
+        expected_features = scaler.feature_names_in_
     else:
-        st.success(f"✅ This transaction is predicted LEGITIMATE (probability = {fraud_prob:.2f})")
+        expected_features = data.select_dtypes(include=[np.number]).columns.tolist()
+
+    missing = [feat for feat in expected_features if feat not in data.columns]
+    if missing:
+        st.warning(f"⚠️ Missing expected features: {missing}")
+        st.stop()
+
+    # Align and scale features
+    try:
+        features = data[expected_features]
+        scaled_features = scaler.transform(features)
+    except Exception as e:
+        st.error(f"❌ Feature scaling failed: {e}")
+        st.stop()
+
+    # Predict
+    try:
+        predictions = model.predict(scaled_features)
+        data['Fraud_Prediction'] = (predictions > 0.5).astype(int)
+    except Exception as e:
+        st.error(f"❌ Prediction failed: {e}")
+        st.stop()
+
+    # Show results
+    st.subheader("🔍 Prediction Results")
+    st.write(data['Fraud_Prediction'].value_counts().rename("Count").reset_index())
+
+    st.subheader("📊 Detailed Output")
+    st.write(data)
+
+    # Download option
+    st.download_button("📥 Download Results", data.to_csv(index=False), file_name="fraud_predictions.csv")
