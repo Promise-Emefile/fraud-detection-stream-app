@@ -11,13 +11,13 @@ st.markdown("Upload transaction data to predict fraudulent activity.")
 
 # Load model and scaler with error handling
 try:
-    model = load_model('fraud_model.h5')
+    model = load_model('model/fraud_model.h5')
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
     st.stop()
 
 try:
-    scaler = pickle.load(open('fraud_detection_scaler.pkl', 'rb'))
+    scaler = pickle.load(open('scaler/fraud_detection_scaler.pkl', 'rb'))
 except Exception as e:
     st.error(f"❌ Scaler loading failed: {e}")
     st.stop()
