@@ -10,7 +10,7 @@ st.markdown("Upload transaction data or enter a single transaction to predict fr
 
 # Load model and scaler
 try:
-    model = load_model('Data/fraud_model.h5')
+    model = load_model('model/fraud_model.h5')
     scaler = pickle.load(open('scaler/fraud_detection_scaler.pkl', 'rb'))  # MinMaxScaler
 except Exception as e:
     st.error(f" Failed to load model or scaler: {e}")
