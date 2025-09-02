@@ -8,7 +8,7 @@ import joblib
 #loading model and scalar
 @st.cache_resource
 def load_trained_model():
-  model = load_model("fraud_detection_model.h5")
+  model = load_model("fraud_model.h5")
   scaler = joblib.load("fraud_detection_scaler.pkl")
   return model, scaler
 
