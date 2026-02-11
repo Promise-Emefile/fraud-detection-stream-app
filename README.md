@@ -66,7 +66,7 @@ The model uses a diverse set of features to capture transaction and customer beh
   - Integration: Deployment into legacy systems may require significant adaptation.
 
 ### Future Enhancements
-I  - ncorporate graph-based fraud detection to identify networks of fraudulent accounts.
+  - Incorporate graph-based fraud detection to identify networks of fraudulent accounts.
 
   - Implement explainable AI (XAI) to provide transparency in fraud predictions.
 
